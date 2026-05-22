@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Zap, BarChart3, Share2, Shield, Clock, Users } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const FEATURES = [
   { icon: Zap, title: 'Instant Creation', desc: 'Create a poll in seconds, no account needed. Share the link and start collecting votes.' },
@@ -17,6 +18,7 @@ const STEPS = [
 ];
 
 const HomePage = () => {
+  const { user } = useAuth();
   return (
     <div className="relative">
       {/* ─── Hero Section ──────────────────────────────────────────────────── */}
@@ -53,9 +55,15 @@ const HomePage = () => {
               Create a Free Poll
               <ArrowRight size={18} />
             </Link>
-            <Link to="/register" className="btn-ghost text-base px-8 py-4">
-              Create Account
-            </Link>
+            {user ? (
+              <Link to="/dashboard" className="btn-ghost text-base px-8 py-4">
+                Go to Dashboard
+              </Link>
+            ) : (
+              <Link to="/register" className="btn-ghost text-base px-8 py-4">
+                Create Account
+              </Link>
+            )}
           </div>
 
           {/* Social proof */}

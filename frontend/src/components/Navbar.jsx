@@ -22,7 +22,7 @@ const Navbar = () => {
   const navLinks = [
     { to: '/', label: 'Home', icon: BarChart3 },
     { to: '/create', label: 'Create Poll', icon: Plus },
-    ...(user ? [{ to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }] : []),
+    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     ...(isAdmin ? [{ to: '/admin', label: 'Admin', icon: Shield }] : [])
   ];
 
@@ -62,12 +62,16 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-3">
             {user ? (
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 text-sm text-white/60">
-                  <div className="w-7 h-7 rounded-full bg-primary-500/30 border border-primary-500/40 flex items-center justify-center">
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-2 text-sm text-white/60 hover:text-white hover:bg-white/5 px-2.5 py-1.5 rounded-xl transition-all duration-200 group"
+                  id="navbar-profile-btn"
+                >
+                  <div className="w-7 h-7 rounded-full bg-primary-500/30 border border-primary-500/40 flex items-center justify-center group-hover:border-primary-500/60 transition-colors">
                     <User size={14} className="text-primary-400" />
                   </div>
-                  <span className="hidden lg:block">{user.name}</span>
-                </div>
+                  <span className="hidden lg:block font-medium">{user.name}</span>
+                </Link>
                 <button onClick={handleLogout} className="btn-ghost text-sm py-2 px-4">
                   <LogOut size={15} />
                   Logout

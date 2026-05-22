@@ -34,7 +34,13 @@ const upload = multer({
 });
 
 // ─── Helper: build voter fingerprint ─────────────────────────────────────────
+// Uses a unique voterId generated per browser (stored in localStorage on frontend)
+// instead of IP-based fingerprint, so multiple users on the same network can vote.
 const getVoterFingerprint = (req) => {
+  // Prefer the browser-generated unique voter ID
+  const voterId = req.body.voterId || req.headers['x-voter-id'];
+  if (voterId) return voterId;
+  // Fallback to IP only if no voterId provided
   const ip = req.ip || req.connection.remoteAddress || 'unknown';
   return ip;
 };
@@ -162,9 +168,14 @@ router.get('/:id', optionalAuth, async (req, res) => {
       return res.json({ success: true, poll: sanitized, hasVoted: false });
     }
 
-    // For "after-vote" visibility, check cookie
+    // For "after-vote" visibility, check cookie and voter fingerprints
     const votedCookie = req.cookies?.voted ? req.cookies.voted.split(',') : [];
-    const hasVoted = votedCookie.includes(req.params.id);
+    const fingerprint = getVoterFingerprint(req);
+    const allVoters = poll.options.flatMap((o) => o.voters);
+    const hasVoted =
+      votedCookie.includes(req.params.id) ||
+      req.cookies[`voted_${req.params.id}`] === '1' ||
+      allVoters.includes(fingerprint);
 
     if (poll.settings.showResults === 'after-vote' && !hasVoted && !isCreator) {
       const sanitized = poll.toObject();

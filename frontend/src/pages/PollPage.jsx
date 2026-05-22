@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { QRCodeCanvas } from 'qrcode.react';
 import { Copy, Download, Lock, Share2, CheckCircle, XCircle, Clock, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import api from '../utils/api';
@@ -9,6 +10,7 @@ import CommentSection from '../components/CommentSection';
 import toast from 'react-hot-toast';
 
 const PollPage = () => {
+  const { user } = useAuth();
   const { id } = useParams();
   const [poll, setPoll] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -184,6 +186,19 @@ const PollPage = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
+      {/* Back to Dashboard breadcrumb */}
+      {(isCreator || user) && (
+        <div className="mb-4">
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-400 hover:text-primary-300 transition-colors"
+            id="poll-back-dashboard-btn"
+          >
+            ← Back to Dashboard
+          </Link>
+        </div>
+      )}
+
       {/* ── Poll Header ── */}
       <div className="glass p-8 mb-6 animate-slide-up">
         <div className="flex flex-wrap items-start justify-between gap-4 mb-4">

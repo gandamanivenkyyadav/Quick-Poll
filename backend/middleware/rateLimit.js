@@ -2,11 +2,11 @@ const rateLimit = require('express-rate-limit');
 
 /**
  * globalLimiter — Applied to all routes.
- * 100 requests per 15 minutes per IP.
+ * 500 requests per 15 minutes per IP (lenient for shared networks/proxies).
  */
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  max: 500,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: 'Too many requests, please try again later.' }
@@ -14,13 +14,18 @@ const globalLimiter = rateLimit({
 
 /**
  * voteLimiter — Applied specifically to voting endpoints.
- * Stricter: 10 votes per 15 minutes per IP to prevent bot flooding.
+ * Keys by unique voter ID (from browser localStorage) when available,
+ * falls back to IP. Higher limit to allow many users on shared networks.
  */
 const voteLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10,
+  max: 50, // increased to allow many users on shared networks/proxies
   standardHeaders: true,
   legacyHeaders: false,
+  // Use voter ID from header if available, otherwise fall back to IP
+  keyGenerator: (req) => {
+    return req.headers['x-voter-id'] || req.ip || req.connection.remoteAddress || 'unknown';
+  },
   message: { success: false, error: 'Too many voting requests. Slow down!' }
 });
 

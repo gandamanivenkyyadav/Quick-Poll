@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, Settings, Image as ImageIcon, Lock, Eye, Calendar, User, CheckSquare, List, ArrowUpDown, ArrowRight } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const POLL_TYPES = [
   { id: 'single', label: 'Single Choice', icon: List, desc: 'Pick one option' },
@@ -17,6 +18,7 @@ const VISIBILITY_OPTIONS = [
 ];
 
 const CreatePoll = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [createdPoll, setCreatedPoll] = useState(null); // holds created poll data
@@ -190,8 +192,17 @@ const CreatePoll = () => {
             >
               View Poll <ArrowRight size={16} />
             </button>
+            {user && (
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="btn-ghost flex-1"
+                id="success-dashboard-btn"
+              >
+                Go to Dashboard
+              </button>
+            )}
             <button
-              onClick={() => { setCreatedPoll(null); setPoll({ title: '', description: '', type: 'single', options: [{ text: '' }, { text: '' }], settings: { anonymous: true, requireName: false, showResults: 'always', deadline: '', password: '', allowChangeVote: false }, webhookUrl: '' }); }}
+              onClick={() => { setCreatedPoll(null); setPoll({ title: '', description: '', type: 'single', options: [{ text: '', image: null }, { text: '', image: null }], settings: { anonymous: true, requireName: false, showResults: 'always', deadline: '', password: '', allowChangeVote: false }, webhookUrl: '' }); }}
               className="btn-ghost flex-1"
             >
               Create Another

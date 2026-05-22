@@ -9,7 +9,14 @@ const api = axios.create({
   withCredentials: true // send cookies with requests
 });
 
-// Request interceptor: attach JWT from localStorage
+// Generate or retrieve unique voter ID for duplicate voting protection
+let voterId = localStorage.getItem('qp_voter_id');
+if (!voterId) {
+  voterId = 'voter_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  localStorage.setItem('qp_voter_id', voterId);
+}
+
+// Request interceptor: attach JWT from localStorage and unique voter ID
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('qp_token');
   if (token) {
@@ -20,6 +27,8 @@ api.interceptors.request.use((config) => {
   if (creatorToken) {
     config.headers['x-creator-token'] = creatorToken;
   }
+  // Attach unique voter ID for IP-sharing workarounds
+  config.headers['x-voter-id'] = voterId;
   return config;
 });
 
