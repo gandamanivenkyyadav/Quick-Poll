@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { QRCodeCanvas } from 'qrcode.react';
-import { Copy, Download, Lock, Share2, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Copy, Download, Lock, Share2, CheckCircle, XCircle, Clock, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import api from '../utils/api';
 import useSocket from '../hooks/useSocket';
 import ChartSection from '../components/ChartSection';
@@ -21,6 +21,10 @@ const PollPage = () => {
   const [passwordRequired, setPasswordRequired] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [isCreator, setIsCreator] = useState(false);
+  const [voters, setVoters] = useState([]);
+  const [showVoters, setShowVoters] = useState(false);
+  const [loadingVoters, setLoadingVoters] = useState(false);
 
   // ─── Fetch Poll ───────────────────────────────────────────────────────────
   const fetchPoll = useCallback(async () => {
@@ -28,6 +32,7 @@ const PollPage = () => {
       const res = await api.get(`/polls/${id}`);
       setPoll(res.data.poll);
       setVoted(res.data.hasVoted || false);
+      setIsCreator(res.data.isCreator || false);
       // Initialize ranking order
       if (res.data.poll.type === 'ranking') {
         setRankingOrder(res.data.poll.options.map((_, i) => i));
@@ -41,10 +46,34 @@ const PollPage = () => {
 
   useEffect(() => { fetchPoll(); }, [fetchPoll]);
 
+  // ─── Fetch Voters (creator only) ─────────────────────────────────────────
+  const fetchVoters = useCallback(async () => {
+    if (!isCreator) return;
+    setLoadingVoters(true);
+    try {
+      const res = await api.get(`/polls/${id}/voters`);
+      setVoters(res.data.voters || []);
+    } catch {
+      toast.error('Failed to load voter details');
+    } finally {
+      setLoadingVoters(false);
+    }
+  }, [id, isCreator]);
+
+  useEffect(() => {
+    if (showVoters && isCreator && voters.length === 0) {
+      fetchVoters();
+    }
+  }, [showVoters, isCreator, voters.length, fetchVoters]);
+
   // ─── Real-Time Updates via Socket.IO ─────────────────────────────────────
   const handleSocketUpdate = useCallback((updatedPoll) => {
     setPoll((prev) => prev ? { ...updatedPoll, comments: updatedPoll.comments || prev.comments } : updatedPoll);
-  }, []);
+    // Refresh voters list if it's open
+    if (showVoters && isCreator) {
+      fetchVoters();
+    }
+  }, [showVoters, isCreator, fetchVoters]);
 
   useSocket(id, handleSocketUpdate);
 
@@ -358,6 +387,78 @@ const PollPage = () => {
 
       {/* ── Results Charts ── */}
       {showResults && <ChartSection poll={poll} />}
+
+      {/* ── Voter Details (Creator Only) ── */}
+      {isCreator && (
+        <div className="glass p-6 mt-6 animate-slide-up" id="voters-section">
+          <button
+            onClick={() => setShowVoters(!showVoters)}
+            className="w-full flex items-center justify-between text-left"
+            id="toggle-voters-btn"
+          >
+            <h2 className="section-title flex items-center gap-2 mb-0">
+              <Users size={18} className="text-primary-400" />
+              👥 Voter Details ({totalVotes})
+            </h2>
+            {showVoters ? (
+              <ChevronUp size={20} className="text-white/50" />
+            ) : (
+              <ChevronDown size={20} className="text-white/50" />
+            )}
+          </button>
+
+          {showVoters && (
+            <div className="mt-4">
+              {loadingVoters ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : voters.length === 0 ? (
+                <p className="text-white/40 text-center py-6 text-sm">No votes recorded yet with details.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-white/10">
+                        <th className="text-left py-3 px-3 text-white/50 font-medium">#</th>
+                        <th className="text-left py-3 px-3 text-white/50 font-medium">Voter</th>
+                        <th className="text-left py-3 px-3 text-white/50 font-medium">Voted For</th>
+                        <th className="text-left py-3 px-3 text-white/50 font-medium">Time</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {voters.map((v) => (
+                        <tr key={v.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                          <td className="py-3 px-3 text-white/30">{v.id}</td>
+                          <td className="py-3 px-3 text-white font-medium">{v.name}</td>
+                          <td className="py-3 px-3">
+                            <span className="inline-block px-2 py-1 rounded-md bg-primary-500/15 text-primary-300 text-xs font-medium">
+                              {v.option}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-white/40 text-xs">
+                            {new Date(v.votedAt).toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {voters.length > 0 && (
+                <button
+                  onClick={fetchVoters}
+                  className="btn-ghost text-xs mt-4"
+                  id="refresh-voters-btn"
+                >
+                  🔄 Refresh
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Export CSV ── */}
       {isClosed && (

@@ -65,6 +65,17 @@ const pollSchema = new mongoose.Schema(
       allowChangeVote: { type: Boolean, default: false } // let voters change their choice
     },
 
+    // Vote log: tracks each individual vote with voter details
+    voteLog: [
+      {
+        voterName: { type: String, default: 'Anonymous' },
+        voterIP: { type: String },
+        optionText: { type: String },
+        optionIndex: { type: Number },
+        votedAt: { type: Date, default: Date.now }
+      }
+    ],
+
     totalVotes: { type: Number, default: 0 },
     isClosed: { type: Boolean, default: false },
 

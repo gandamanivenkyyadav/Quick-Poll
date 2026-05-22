@@ -244,6 +244,15 @@ router.post('/:id/vote', voteLimiter, async (req, res) => {
     for (const idx of indicesToVote) {
       poll.options[idx].votes += 1;
       poll.options[idx].voters.push(fingerprint);
+
+      // Log this vote with voter details
+      poll.voteLog.push({
+        voterName: name || 'Anonymous',
+        voterIP: fingerprint,
+        optionText: poll.options[idx].text,
+        optionIndex: idx,
+        votedAt: new Date()
+      });
     }
     poll.totalVotes += 1;
 
@@ -299,6 +308,38 @@ router.post('/:id/comment', async (req, res) => {
     broadcastUpdate(req, req.params.id, poll.toObject());
 
     res.json({ success: true, comment: poll.comments[poll.comments.length - 1] });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// ─── GET /api/polls/:id/voters ────────────────────────────────────────────────
+// Returns voter info (only accessible by poll creator)
+router.get('/:id/voters', optionalAuth, async (req, res) => {
+  try {
+    const poll = await Poll.findById(req.params.id);
+    if (!poll) return res.status(404).json({ success: false, error: 'Poll not found' });
+
+    // Verify requester is the creator
+    const isCreator =
+      (req.user && String(req.user._id) === String(poll.creator?._id)) ||
+      req.headers['x-creator-token'] === poll.creatorToken;
+    const isAdmin = req.user?.role === 'admin';
+
+    if (!isCreator && !isAdmin) {
+      return res.status(403).json({ success: false, error: 'Only the creator can view voter details' });
+    }
+
+    // Return voteLog with masked IPs for privacy
+    const voters = (poll.voteLog || []).map((v, idx) => ({
+      id: idx + 1,
+      name: v.voterName || 'Anonymous',
+      option: v.optionText,
+      optionIndex: v.optionIndex,
+      votedAt: v.votedAt
+    }));
+
+    res.json({ success: true, voters, totalVotes: poll.totalVotes });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }
