@@ -1,0 +1,158 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Custom Base Styles ─────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    @apply border-white/10;
+  }
+  body {
+    @apply bg-surface-950 text-white font-sans antialiased;
+    background-image: radial-gradient(ellipse at top, rgba(99, 102, 241, 0.08) 0%, transparent 60%);
+    min-height: 100vh;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+  input, select, textarea {
+    @apply outline-none;
+  }
+}
+
+/* ─── Custom Component Classes ───────────────────────────────────────────────── */
+@layer components {
+  /* Glass card effect */
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl;
+  }
+
+  .glass-strong {
+    @apply bg-white/10 backdrop-blur-2xl border border-white/20 rounded-2xl;
+  }
+
+  /* Primary button */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-gradient-to-r from-primary-600 to-primary-500
+           hover:from-primary-500 hover:to-primary-400
+           text-white font-semibold rounded-xl px-6 py-3
+           transition-all duration-200 ease-out
+           shadow-lg shadow-primary-900/40
+           hover:shadow-primary-700/50 hover:scale-[1.02]
+           active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Secondary / ghost button */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20
+           text-white font-medium rounded-xl px-6 py-3
+           transition-all duration-200;
+  }
+
+  /* Danger button */
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2
+           bg-red-600/80 hover:bg-red-600
+           text-white font-medium rounded-xl px-4 py-2
+           transition-all duration-200;
+  }
+
+  /* Form input */
+  .input {
+    @apply w-full bg-white/5 border border-white/10 hover:border-white/20
+           focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20
+           text-white placeholder-white/30 rounded-xl px-4 py-3
+           transition-all duration-200;
+  }
+
+  /* Label */
+  .label {
+    @apply block text-sm font-medium text-white/70 mb-2;
+  }
+
+  /* Stat card */
+  .stat-card {
+    @apply glass p-6 flex flex-col gap-2;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold;
+  }
+
+  .badge-green {
+    @apply badge bg-emerald-500/20 text-emerald-400 border border-emerald-500/30;
+  }
+
+  .badge-red {
+    @apply badge bg-red-500/20 text-red-400 border border-red-500/30;
+  }
+
+  .badge-yellow {
+    @apply badge bg-amber-500/20 text-amber-400 border border-amber-500/30;
+  }
+
+  .badge-blue {
+    @apply badge bg-primary-500/20 text-primary-400 border border-primary-500/30;
+  }
+
+  /* Section heading */
+  .section-title {
+    @apply text-2xl font-bold text-white mb-6;
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    @apply h-2 rounded-full bg-white/10 overflow-hidden;
+  }
+
+  .progress-fill {
+    @apply h-full rounded-full bg-gradient-to-r from-primary-500 to-accent-500 transition-all duration-700 ease-out;
+  }
+}
+
+/* ─── Custom Utilities ───────────────────────────────────────────────────────── */
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-400 via-purple-400 to-accent-400 bg-clip-text text-transparent;
+  }
+
+  .bg-grid {
+    background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(99, 102, 241, 0.4) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.4);
+    border-radius: 9999px;
+  }
+}
+
+/* ─── Animations ─────────────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent 30%, rgba(255,255,255,0.05) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Chart.js canvas override for dark mode */
+canvas {
+  border-radius: 12px;
+}
