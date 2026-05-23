@@ -55,15 +55,9 @@ const HomePage = () => {
               Create a Free Poll
               <ArrowRight size={18} />
             </Link>
-            {user ? (
-              <Link to="/dashboard" className="btn-ghost text-base px-8 py-4">
-                Go to Dashboard
-              </Link>
-            ) : (
-              <Link to="/register" className="btn-ghost text-base px-8 py-4">
-                Create Account
-              </Link>
-            )}
+            <Link to="/dashboard" className="btn-ghost text-base px-8 py-4">
+              Dashboard
+            </Link>
           </div>
 
           {/* Social proof */}
